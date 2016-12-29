@@ -109,7 +109,8 @@ public class TestBigdataSailWithQuads extends AbstractBigdataSailTestCase {
         suite.addTestSuite(TestConcurrentKBCreate.TestWithoutGroupCommit.class);
 
         suite.addTestSuite(TestTxCreate.class);
-        
+        suite.addTestSuite(TestCnxnCreate.class);
+
         suite.addTestSuite(TestChangeSets.class);
 
         // test suite for the history index.
@@ -133,12 +134,17 @@ public class TestBigdataSailWithQuads extends AbstractBigdataSailTestCase {
 		suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1747.class);
         suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1753.class);
 
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1755.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1785.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1788.class);
+
         suite.addTestSuite(com.bigdata.rdf.sail.DavidsTestBOps.class);
 
         suite.addTestSuite(com.bigdata.rdf.sail.TestLexJoinOps.class);
         suite.addTestSuite(com.bigdata.rdf.sail.TestMaterialization.class);
         suite.addTestSuite(com.bigdata.rdf.sail.TestTicket632.class);
         suite.addTestSuite(com.bigdata.rdf.sail.TestTicket669.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1889.class);
 
         suite.addTestSuite(com.bigdata.rdf.sail.TestNoExceptions.class);
 
@@ -197,8 +203,21 @@ public class TestBigdataSailWithQuads extends AbstractBigdataSailTestCase {
         
     }
     
+    private Properties properties = null;
+    
+    @Override
+    protected void tearDown(final ProxyBigdataSailTestCase testCase) throws Exception {
+
+        super.tearDown(testCase);
+        
+        properties = null;
+        
+    }
+    
     @Override
     protected BigdataSail getSail(final Properties properties) {
+
+        this.properties = properties;
         
         return new BigdataSail(properties);
         
@@ -228,7 +247,7 @@ public class TestBigdataSailWithQuads extends AbstractBigdataSailTestCase {
     @Override
     protected BigdataSail reopenSail(final BigdataSail sail) {
 
-        final Properties properties = sail.database.getProperties();
+//        final Properties properties = sail.getProperties();
 
         if (sail.isOpen()) {
 

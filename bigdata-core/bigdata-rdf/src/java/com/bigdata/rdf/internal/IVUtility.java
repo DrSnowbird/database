@@ -40,13 +40,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.openrdf.model.impl.URIImpl;
-import org.openrdf.model.vocabulary.XMLSchema;
+import org.openrdf.model.vocabulary.RDF;
 
 import com.bigdata.btree.keys.IKeyBuilder;
 import com.bigdata.btree.keys.KeyBuilder;
 import com.bigdata.io.LongPacker;
 import com.bigdata.rdf.internal.impl.AbstractIV;
-import com.bigdata.rdf.internal.impl.AbstractInlineIV;
 import com.bigdata.rdf.internal.impl.BlobIV;
 import com.bigdata.rdf.internal.impl.TermId;
 import com.bigdata.rdf.internal.impl.bnode.FullyInlineUnicodeBNodeIV;
@@ -87,6 +86,8 @@ import com.bigdata.rdf.spo.SPOKeyOrder;
 
 /**
  * Helper class for {@link IV}s.
+ * 
+ * @openrdf
  */
 /*
  * Note: There are a huge number of warnings in this class, all of which are
@@ -416,8 +417,10 @@ public class IVUtility {
                     if(nullIsNullRef) {
                         return null;
                     }
-                    // Return a "mock" IV consistent with the VTE flags.
-                    return TermId.mockIV(VTE.valueOf(flags));
+                    // Return a "mock" IV consistent with the VTE flags. 
+                    // See BLZG-2051 SolutionSetStream incorrectly decodes VTE of MockIVs
+                    return TermId.mockIV(AbstractIV.getInternalValueTypeEnum(flags));
+//                    return TermId.mockIV(VTE.valueOf(flags));
                 } else {
                     return new TermId(flags, termId);
                 }
@@ -625,8 +628,10 @@ public class IVUtility {
         switch (dte) {
         case XSDBoolean: {
             final byte x = KeyBuilder.decodeByte(key[o]);
-            final AbstractLiteralIV iv = (x == 0) ? 
-                    XSDBooleanIV.FALSE : XSDBooleanIV.TRUE;
+            final boolean isTrue = (x != 0);
+            final AbstractLiteralIV iv = XSDBooleanIV.valueOf(isTrue);
+//            final AbstractLiteralIV iv = (x == 0) ? 
+//                    XSDBooleanIV.FALSE : XSDBooleanIV.TRUE;
             return isExtension ? new LiteralExtensionIV(iv, datatype) : iv; 
         }
         case XSDByte: {
@@ -921,91 +926,10 @@ public class IVUtility {
 //        } else {
 //            final String type = s.substring(0, s.indexOf('(')); 
 //            final String val = s.substring(s.indexOf('('), s.length()-1);
-//            return decode(val, type);
+//            return decode(val, type); // Note, that decode() is moved
+//				// into ASTDeferredIVResolutionInitializer
+//				// as it is not used anywhere else
 //        }
 //    }
 
-    /**
-     * Decode an IV from its string representation and type, provided in as
-     * ASTRDFLiteral node in AST model.
-     * <p>
-     * Note: This is a very special case method. Normally logic should go
-     * through the ILexiconRelation to resolve inline IVs. This always uses
-     * inline IVs, and thus defeats the ILexiconConfiguration for the namespace.
-     * 
-     * @param val
-     *            the string representation
-     * @param type
-     *            value type
-     * @return the IV
-     * 
-     * @see https://jira.blazegraph.com/browse/BLZG-1176 (SPARQL QUERY/UPDATE should not use db connection)
-     */
-    public static IV decode(final String val, final String type) {
-            final DTE dte = Enum.valueOf(DTE.class, type);
-            switch (dte) {
-            case XSDBoolean: {
-                final boolean b = Boolean.valueOf(val);
-                if (b) {
-                    return XSDBooleanIV.TRUE;
-                } else {
-                    return XSDBooleanIV.FALSE;
-                }
-            }
-            case XSDByte: {
-                final byte x = Byte.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case XSDShort: {
-                final short x = Short.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case XSDInt: {
-                final int x = Integer.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case XSDLong: {
-                final long x = Long.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case XSDFloat: {
-                final float x = Float.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case XSDDouble: {
-                final double x = Double.valueOf(val);
-                return new XSDNumericIV<BigdataLiteral>(x);
-            }
-            case UUID: {
-                final UUID x = UUID.fromString(val);
-                return new UUIDLiteralIV<BigdataLiteral>(x);
-            }
-            case XSDInteger: {
-                final BigInteger x = new BigInteger(val);
-                return new XSDIntegerIV<BigdataLiteral>(x);
-            }
-            case XSDDecimal: {
-                final BigDecimal x = new BigDecimal(val);
-                return new XSDDecimalIV<BigdataLiteral>(x);
-            }
-            case XSDString: {
-                return new FullyInlineTypedLiteralIV(val, null, XMLSchema.STRING);
-            }
-            case XSDUnsignedByte: {
-                return new XSDUnsignedByteIV<>((byte) (Byte.valueOf(val) + Byte.MIN_VALUE));
-            }
-            case XSDUnsignedShort: {
-                return new XSDUnsignedShortIV<>((short) (Short.valueOf(val) + Short.MIN_VALUE));
-            }
-            case XSDUnsignedInt: {
-                return new XSDUnsignedIntIV((int) (Integer.valueOf(val) + Integer.MIN_VALUE));
-            }
-            case XSDUnsignedLong: {
-                return new XSDUnsignedLongIV<>(Long.valueOf(val) + Long.MIN_VALUE);
-            }
-            default:
-                throw new UnsupportedOperationException("dte=" + dte);
-            }
-    }
-    
 }

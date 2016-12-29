@@ -11,6 +11,8 @@ Please also visit us at our: [website](https://www.blazegraph.com), [wiki](https
 
 Find an issue?   Need help?  See [JIRA](https://jira.blazegraph.com) or purchase [Support](https://www.blazegraph.com/buy).
 
+Reporting a security issue: [Security Reporting](Security.md).
+
 ###Quick Start with the Executable Jar
 Up and running with Blazegraph in under 30 seconds:  [Quick Start](https://wiki.blazegraph.com/wiki/index.php/Quick_Start).
 
@@ -66,7 +68,7 @@ Tinkerpop3 supports requires Java 1.8 and is now in a separate repository.  See 
 ```
 
 ###Triple Pattern Fragment (TPF) Server
-There is a [Blazegraph Triple Pattern Fragment TPF](https://github.com/blazegraph/BlazegraphBasedTPFServer) server that supports [Linked Data Fragments](http://linkeddatafragments.org/).
+There is a [Triple Pattern Fragment (TPF) for Blazegraph](https://github.com/TPF4Blazegraph/TPF4Blazegraph) server that supports [Linked Data Fragments](http://linkeddatafragments.org/).
 
 ```
     <dependency>

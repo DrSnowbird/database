@@ -36,7 +36,9 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -202,6 +204,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                 new NV(Predicate.Annotations.BOP_ID, startId),//
                 new NV(SliceOp.Annotations.EVALUATION_CONTEXT,
                         BOpEvaluationContext.CONTROLLER),//
+                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                        StandaloneChunkHandler.TEST_INSTANCE),//
                 }));
 
         final UUID queryId = UUID.randomUUID();
@@ -293,7 +297,10 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
 
         final PipelineOp query = new PipelineJoin<E>(new BOp[] { /*startOp*/ },//
                 new NV(Predicate.Annotations.BOP_ID, joinId),//
-                new NV(PipelineJoin.Annotations.PREDICATE, pred));
+                new NV(PipelineJoin.Annotations.PREDICATE, pred),
+                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                        StandaloneChunkHandler.TEST_INSTANCE)//
+                );
 
         // the expected solution.
         final IBindingSet[] expected = new IBindingSet[] {//
@@ -372,7 +379,10 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
 
 		final PipelineOp query = new PipelineJoin<E>(new BOp[] { startOp },//
 				new NV(Predicate.Annotations.BOP_ID, joinId),//
-				new NV(PipelineJoin.Annotations.PREDICATE, pred));
+				new NV(PipelineJoin.Annotations.PREDICATE, pred),
+                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                        StandaloneChunkHandler.TEST_INSTANCE)
+                );
 
         // the expected solution.
         final IBindingSet[] expected = new IBindingSet[] {//
@@ -489,6 +499,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                 BOpEvaluationContext.CONTROLLER),//
                         new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                         new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                        new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                StandaloneChunkHandler.TEST_INSTANCE),//
 //                        new NV(
 //                                QueryEngineTestAnnotations.COMBINE_RECEIVED_CHUNKS,
 //                                false),//
@@ -670,6 +682,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                 NV.asMap(new NV[] {//
                         new NV(BOp.Annotations.BOP_ID, delayId),//
                         new NV(PipelineDelayOp.Annotations.DELAY, 2000L/*ms*/),//
+                        new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                StandaloneChunkHandler.TEST_INSTANCE),//
                         }));
         
         // the source data.
@@ -785,6 +799,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                                 BOpEvaluationContext.CONTROLLER),//
                                         new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                                         new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                                        new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                                StandaloneChunkHandler.TEST_INSTANCE),//
 //                                        // Require the chunked running query impl.
 //                                        new NV(QueryEngine.Annotations.RUNNING_QUERY_CLASS,
 //                                                ChunkedRunningQuery.class.getName()),//
@@ -952,6 +968,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                         BOpEvaluationContext.CONTROLLER),//
                                 new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                                 new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                        StandaloneChunkHandler.TEST_INSTANCE),//
                         })//
         );
 
@@ -1105,6 +1123,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                 BOpEvaluationContext.CONTROLLER),//
                         new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                         new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                        new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                StandaloneChunkHandler.TEST_INSTANCE),//
                         })//
         );
 
@@ -1263,7 +1283,10 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
 		final PipelineOp join2Op = new PipelineJoin<E>(//
 				new BOp[] { join1Op },//
 				new NV(Predicate.Annotations.BOP_ID, joinId2),//
-				new NV(PipelineJoin.Annotations.PREDICATE, pred2Op));
+				new NV(PipelineJoin.Annotations.PREDICATE, pred2Op),
+                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                        StandaloneChunkHandler.TEST_INSTANCE)//
+				);
 
 		final PipelineOp query = join2Op;
 
@@ -1584,6 +1607,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                 BOpEvaluationContext.CONTROLLER),//
                         new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                         new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                        new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                StandaloneChunkHandler.TEST_INSTANCE),//
                         }));
 
         final PipelineOp query = sliceOp;
@@ -1957,6 +1982,8 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
                                         BOpEvaluationContext.CONTROLLER),//
                                 new NV(PipelineOp.Annotations.SHARED_STATE,true),//
                                 new NV(PipelineOp.Annotations.REORDER_SOLUTIONS,false),//
+                                new NV(QueryEngine.Annotations.CHUNK_HANDLER,
+                                        StandaloneChunkHandler.TEST_INSTANCE),//
                                 }));
 
         final PipelineOp query = sliceOp;
@@ -1982,4 +2009,40 @@ public class TestQueryEngine extends AbstractQueryEngineTestCase {
         return runningQuery;
     }
 
+    /**
+     * Test the LatchExecutor to verify reliable progression with multiple threads contending
+     * to add tasks.
+     * 
+     * @throws InterruptedException
+     */
+	public void testLatchExecutorProgression() throws InterruptedException {
+
+	    final LatchedExecutor latched = new LatchedExecutor(
+				Executors.newCachedThreadPool(), 1);
+
+		final Semaphore sem = new Semaphore(1);
+
+		final Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+
+				sem.release();
+
+			}
+
+		};
+
+		// Without the fix to the LatchedExecutor.scheduleNext this deadlocks in less than
+		//	10,000 iterations
+		for (int n = 0; n < (1 * 1024 * 1024); n++) { // try 1 million iterations
+			// System.err.println("Iteration: " + n);
+			
+			sem.acquire();
+
+			latched.execute(task);
+
+		}
+
+	}
 }

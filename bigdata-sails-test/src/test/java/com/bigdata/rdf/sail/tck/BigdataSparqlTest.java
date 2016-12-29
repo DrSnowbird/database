@@ -48,6 +48,7 @@ import junit.framework.TestSuite;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.util.ModelUtil;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
@@ -76,6 +77,7 @@ import com.bigdata.btree.keys.StrengthEnum;
 import com.bigdata.journal.BufferMode;
 import com.bigdata.journal.IIndexManager;
 import com.bigdata.journal.Journal;
+import com.bigdata.rdf.model.BigdataValue;
 import com.bigdata.rdf.sail.BigdataSail;
 import com.bigdata.rdf.sail.BigdataSail.Options;
 import com.bigdata.rdf.sail.BigdataSailRepository;
@@ -161,11 +163,26 @@ extends SPARQLQueryTest // Sesame TupleExpr based evaluation
 //            "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/expr-builtin/manifest#dawg-datatype-2",
 
         "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-wildcard-cycles-04",
-        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-subquery-04",
-        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-subquery-06",
-        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-order-02",
-        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-order-03",
-        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-sum-02",
+        //"http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-subquery-04", // BLZG-618
+        
+        
+        /* This query currently works: */ 
+        //"http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-subquery-06",
+        
+        
+        //"http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-order-02", // BLZG-618
+        //"http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-order-03", // BLZG-618
+        
+        /* This test actually produces correct result (see TestTCK.test_sparql11_sum_02()) 
+         * which is deemed incorrect because sparql11-sum-02.srx in 
+         * the Sesame Test Suite v2.7.12 is wrong: it specifies {totalPrice=0} 
+         * as the correct result (see TestTCK.test_sparql11_sum_02()). Note that 
+         * the latest release sesame-sparql-testsuite 4.1.1 still contains 
+         * the wrong result file.
+         * See https://openrdf.atlassian.net/browse/SES-884
+         */ 
+        "http://www.w3.org/2001/sw/DataAccess/tests/data-r2/syntax-sparql1/manifest#sparql11-sum-02", 
+        
         
         /*
          * This test produces no result instead of an empty result.
@@ -191,7 +208,7 @@ Data:
 
 =========================================
          */
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg-empty-group2",
+        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg-empty-group2", 
         
         /*
          * This test produces some extra results.
@@ -301,8 +318,11 @@ Data:
 :s :p :o, :o1, :o2.
 :t :p :o1, :o2.
 =========================================
+ 
+            This query currently works correctly.
+ 
          */
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/exists/manifest#exists04",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/exists/manifest#exists04",
         
         /*
          * These two are the same problem.  We drop solutions that do not have
@@ -393,18 +413,25 @@ graph ?g {
 }
 }
 =========================================
+* 
+*         Currently (Apr 13, 2016) only subquery03 fails.
+* 
          */
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery01",
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery02",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery01",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery02",
         "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery03",
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery04",
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery05",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery04",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/subquery/manifest#subquery05",
 
         /*
 The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
+               
+               They are no longer in the black list because they work now, 
+               after the completion of https://jira.blazegraph.com/browse/BLZG-618
+ 
          */
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg03",
-        "http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg07",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg03",
+        //"http://www.w3.org/2009/sparql/docs/tests/data-sparql11/aggregates/manifest#agg07",
     });
 
 	/**
@@ -983,7 +1010,7 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
         
         if (delegate != null && delegate instanceof BigdataSailRepository) {
             
-            backend = ((BigdataSailRepository) delegate).getDatabase()
+            backend = ((BigdataSailRepository) delegate).getSail()
                             .getIndexManager();
             
         }
@@ -1309,14 +1336,14 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
 
                 message.append("Expected results: \n");
                 for (BindingSet bs : expectedBindings) {
-                    message.append(bs);
+                    printBindingSet(message, bs);
                     message.append("\n");
                 }
                 message.append("=========================================\n");
 
                 message.append("Bigdata results: \n");
                 for (BindingSet bs : queryBindings) {
-                    message.append(bs);
+                    printBindingSet(message, bs);
                     message.append("\n");
                 }
                 message.append("=========================================\n");
@@ -1325,7 +1352,7 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
 
                     message.append("Missing results: \n");
                     for (BindingSet bs : missingBindings) {
-                        message.append(bs);
+                        printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append("=========================================\n");
@@ -1334,7 +1361,7 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
                 if (!unexpectedBindings.isEmpty()) {
                     message.append("Extra results: \n");
                     for (BindingSet bs : unexpectedBindings) {
-                        message.append(bs);
+                        printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append("=========================================\n");
@@ -1345,13 +1372,13 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
                     message.append(" =======================\n");
                     message.append("query result: \n");
                     for (BindingSet bs : queryBindings) {
-                        message.append(bs);
+                        printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append(" =======================\n");
                     message.append("expected result: \n");
                     for (BindingSet bs : expectedBindings) {
-                        message.append(bs);
+                        printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append(" =======================\n");
@@ -1363,13 +1390,13 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
                     message.append(" =======================\n");
                     message.append("query result: \n");
                     for (BindingSet bs : queryBindings) {
-                        message.append(bs);
+                        printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append(" =======================\n");
                     message.append("expected result: \n");
                     for (BindingSet bs : expectedBindings) {
-                        message.append(bs);
+                    	printBindingSet(message, bs);
                         message.append("\n");
                     }
                     message.append(" =======================\n");
@@ -1422,6 +1449,17 @@ The following two are covered by: https://jira.blazegraph.com/browse/BLZG-1721
             }
             */
         }
+
+	private void printBindingSet(StringBuilder message, BindingSet bs) {
+//		message.append(bs);
+    	for (String bn: bs.getBindingNames()) {
+    		Value v = bs.getBinding(bn).getValue();
+			message.append(bn).append('=').append(v);
+    		if (v instanceof BigdataValue) {
+    			message.append(' ').append(((BigdataValue)v).getIV()).append(' ');
+    		}
+    	}
+	}
 
         @Override
         protected final void compareGraphs(Set<Statement> queryResult, Set<Statement> expectedResult)

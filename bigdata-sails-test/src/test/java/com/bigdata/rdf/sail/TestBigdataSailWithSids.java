@@ -38,7 +38,6 @@ import com.bigdata.rdf.sail.sparql.TestVerifyAggregates;
  * Test suite for the {@link BigdataSail} with statement identifiers enabled.
  * 
  * @author <a href="mailto:thompsonbry@users.sourceforge.net">Bryan Thompson</a>
- * @version $Id$
  */
 public class TestBigdataSailWithSids extends AbstractBigdataSailTestCase {
 
@@ -89,6 +88,7 @@ public class TestBigdataSailWithSids extends AbstractBigdataSailTestCase {
         suite.addTestSuite(TestConcurrentKBCreate.TestWithoutGroupCommit.class);
 
         suite.addTestSuite(TestTxCreate.class);
+        suite.addTestSuite(TestCnxnCreate.class);
 
         suite.addTestSuite(TestSids.class);
 
@@ -120,6 +120,11 @@ public class TestBigdataSailWithSids extends AbstractBigdataSailTestCase {
 		suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1747.class);
         suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1753.class);
 
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1755.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1785.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1788.class);
+        suite.addTestSuite(com.bigdata.rdf.sail.TestTicket1875.class);
+
         suite.addTestSuite(TestRDRHistory.class);
 
         suite.addTestSuite(TestSparqlStar.class);
@@ -129,17 +134,32 @@ public class TestBigdataSailWithSids extends AbstractBigdataSailTestCase {
         return suite;
         
     }
+
+    private Properties properties = null;
     
     @Override
-    protected BigdataSail getSail(Properties properties) {
+    protected void tearDown(final ProxyBigdataSailTestCase testCase) throws Exception {
+
+        super.tearDown(testCase);
+        
+        properties = null;
+        
+    }
+    
+    @Override
+    protected BigdataSail getSail(final Properties properties) {
+    
+        this.properties = properties;
         
         return new BigdataSail(properties);
         
     }
 
+    @Override
     public Properties getProperties() {
 
         final Properties properties = new Properties(super.getProperties());
+        
         properties.setProperty(Options.STATEMENT_IDENTIFIERS, "true");
 /*
         
@@ -152,9 +172,9 @@ public class TestBigdataSailWithSids extends AbstractBigdataSailTestCase {
     }
     
     @Override
-    protected BigdataSail reopenSail(BigdataSail sail) {
+    protected BigdataSail reopenSail(final BigdataSail sail) {
 
-        final Properties properties = sail.database.getProperties();
+//        final Properties properties = sail.getProperties();
 
         if (sail.isOpen()) {
 

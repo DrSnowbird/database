@@ -80,5 +80,3 @@ curl -X POST --data-binary @dataloader.xml --header 'Content-Type:application/xm
 ```
 
 This will bulk load the namespace `pubchem` with the files from `/path/to/pubchem-core`.
-
-
